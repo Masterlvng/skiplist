@@ -13,9 +13,9 @@ namespace util{
     class SkipList 
     {
         public:
-            SkipList(const TKey& max): rand_(0x01bdfe8a)
+            SkipList(): rand_(0x01bdfe8a)
             {
-                init_(max);
+                init_();
             }
 
             ~SkipList()
@@ -25,16 +25,16 @@ namespace util{
 
             bool Search(const TKey& key, TVal& val)
             {
-                node_t* update[MAX_LEVEL];
+                node_t* prev[MAX_LEVEL];
                 node_t* n;
-                return hasNode_(key, val, &n, update);
+                return hasNode_(key, val, &n, prev);
             }
 
             bool Insert(const TKey& key, TVal& val)
             {
-                node_t* update[MAX_LEVEL];
+                node_t* prev[MAX_LEVEL];
                 node_t* n;
-                if(!hasNode_(key, val, &n, update))
+                if(!hasNode_(key, val, &n, prev))
                 {
                     level_t level = randomLevel_();
                     if(level > list_->level_)
@@ -42,7 +42,7 @@ namespace util{
                         //level = ++list_->level_;
                         int i;
                         for(i = list_->level_; i<= level; ++i)
-                            update[i] = list_->header_;
+                            prev[i] = list_->header_;
                         list_->level_ = level;
                     }
                     node_t* newNode = newNode_(level);
@@ -51,7 +51,7 @@ namespace util{
                     int i = level;
                     for(;i >= 0; --i)
                     {
-                        node_t* tempN = update[i];
+                        node_t* tempN = prev[i];
                         newNode->forward_[i] = tempN->forward_[i];
                         tempN->forward_[i] = newNode;
                     }
@@ -62,18 +62,18 @@ namespace util{
 
             bool Delete(const TKey& key, TVal& val)
             {
-                node_t* update[MAX_LEVEL];
+                node_t* prev[MAX_LEVEL];
                 node_t* n;
-                if (hasNode_(key, val, &n, update))
+                if (hasNode_(key, val, &n, prev))
                 {
                     int i;
                     for(i = 0; i <= list_->level_; ++i)
                     {
-                        if(update[i]->forward_[i] != n)
+                        if(prev[i]->forward_[i] != n)
                         {
                             break;
                         }
-                        update[i]->forward_[i] = n->forward_[i];
+                        prev[i]->forward_[i] = n->forward_[i];
                     }
                     free(n);
                     while(list_->level_ > 0
@@ -115,11 +115,11 @@ namespace util{
             node_t* nil_;
             Random rand_;
         private:
-            void init_(TKey max)
+            void init_()
             {
                 nil_ = (node_t*)malloc(sizeof(node_t));
-                nil_->key_ = max;
                 nil_->level_ = 0;
+                nil_->forward_[0] = NULL;
                 list_ = (list_t*)malloc(sizeof(list_t));
                 list_->level_ = 0;
                 list_->header_ = newNode_(MAX_LEVEL);
@@ -151,17 +151,17 @@ namespace util{
                 return height;
             }
 
-            bool hasNode_(const TKey& key, TVal& val, node_t** node, node_t* update[MAX_LEVEL])
+            bool hasNode_(const TKey& key, TVal& val, node_t** node, node_t* prev[MAX_LEVEL])
             {
                 node_t* n = list_->header_;
                 int i = list_->level_;
                 for(; i>=0; --i)
                 {
-                    while(n->forward_[i]->key_ < key)
+                    while(n->forward_[i]->forward_[0] != NULL && n->forward_[i]->key_ < key)
                     {
                         n = n->forward_[i];
                     }
-                    update[i] = n;
+                    prev[i] = n;
                 }
                 if (n->forward_[0]->key_ != key)
                 {
