@@ -57,6 +57,8 @@ namespace util{
                     }
                     return true;
                 }
+                // update Node
+                n->val_ = val;
                 return false;
             }
 
@@ -75,7 +77,10 @@ namespace util{
                         }
                         prev[i]->forward_[i] = n->forward_[i];
                     }
-                    free(n);
+
+                    //free(n->mem);
+                    //delete n;
+                    freeNode_(n);
                     while(list_->level_ > 0
                             && list_->header_->forward_[list_->level_] == nil_)
                     {
@@ -91,20 +96,36 @@ namespace util{
                 while(n != nil_)
                 {
                     node_t* tempN = n->forward_[0];
-                    free(n);
+                    /*
+                    char *mem = n->mem;
+                    n->~node_t();
+                    free(mem);
+                    */
+                    freeNode_(n);
                     n = tempN;
                 }
-                free(n);free(list_);
+                /*
+                char *mem = n->mem;
+                n->~node_t();
+                free(mem);
+                */
+                freeNode_(n);
+                free(list_);
             }
             
         private:
-            struct node_t
+            class node_t
             {
+                public:
+                node_t(){}
+                ~node_t(){}
                 TKey key_;
                 TVal val_;
                 level_t level_;
-                node_t* forward_[1];
+                char* mem;
+                node_t* forward_[0];
             };
+
             struct list_t
             {
                 level_t level_;
@@ -117,7 +138,8 @@ namespace util{
         private:
             void init_()
             {
-                nil_ = (node_t*)malloc(sizeof(node_t));
+                
+                nil_ = newNode_(1);
                 nil_->level_ = 0;
                 nil_->forward_[0] = NULL;
                 list_ = (list_t*)malloc(sizeof(list_t));
@@ -133,9 +155,20 @@ namespace util{
 
             node_t* newNode_(const level_t level)
             {
-                node_t* node = (node_t*)malloc(sizeof(node_t) + level*sizeof(node_t*));
+                char * mem = (char*)malloc(sizeof(node_t) + level*sizeof(node_t*));
+                //将来替换为更牛B的内存分配器
+
+                node_t* node = new (mem) node_t();
                 node->level_ = level;
+                node->mem = mem;
                 return node;
+            }
+
+            void freeNode_(node_t* n)
+            {
+                char* mem = n->mem;
+                n->~node_t();
+                free(mem);
             }
 
             level_t randomLevel_()

@@ -1,12 +1,32 @@
 #include "../src/skiplist.hpp"
 #include <map>
 #include <sys/time.h>
+#include <string>
 #include <iostream>
+
 using namespace std;
 using namespace util;
 
+typedef struct ss
+{
+    string* s;
+} s_t;
+
 int main()
-{   
+{  
+    /*
+    s_t* st = new s_t();
+    cout << st->s;
+*/
+    string s("sdfsdfsdf");
+    util::SkipList<string, unsigned int> list;
+    unsigned int a = 12344;
+    list.Insert(s, a);
+    unsigned int b;
+    list.Search(s, b);
+    cout << b;
+    list.Delete(s, b);
+    /*
     struct timeval start, end;
     unsigned int val = 12344;
     util::SkipList<unsigned long, unsigned int> list;
@@ -34,4 +54,5 @@ int main()
 
     std::cout << time_pass <<" ms" << std::endl; 
     return 1;
+    */
 }
