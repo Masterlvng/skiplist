@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 using namespace std;
 using namespace util;
@@ -11,6 +12,13 @@ typedef struct ss
 {
     string* s;
 } s_t;
+
+string concate(string s, int i)
+{
+    stringstream ss;
+    ss << s << i;
+    return ss.str();
+}
 
 int main()
 {  
@@ -21,11 +29,12 @@ int main()
     string s("sdfsdfsdf");
     util::SkipList<string, unsigned int> list;
     unsigned int a = 12344;
-    list.Insert(s, a);
-    unsigned int b;
-    list.Search(s, b);
-    cout << b;
-    list.Delete(s, b);
+
+    int i = 0;
+    for(;i<100000;i++)
+    {
+        list.Insert(concate("sdf", i), a);
+    }
     /*
     struct timeval start, end;
     unsigned int val = 12344;
