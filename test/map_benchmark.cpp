@@ -20,6 +20,18 @@ string concate(string s, int i)
     return ss.str();
 }
 
+struct Comparator {
+    int operator()(const string& a, const string& b) const 
+    {
+        if ( a < b)
+            return -1;
+        else if( a > b)
+            return 1;
+        else 
+            return 0;
+    }
+};
+
 int main()
 {  
     /*
@@ -27,13 +39,18 @@ int main()
     cout << st->s;
 */
     string s("sdfsdfsdf");
-    util::SkipList<string, unsigned int> list;
+    Comparator com;
+    util::SkipList<string, string, Comparator> list(com);
     unsigned int a = 12344;
-
     int i = 0;
-    for(;i<100000;i++)
+    for(;i<10000;i++)
     {
-        list.Insert(concate("sdf", i), a);
+        list.Insert(concate("asdf", i), s);
+    }
+    i = 0;
+    for(;i<10000;i++)
+    {
+        list.Delete(concate("asdf", i), s);
     }
     /*
     struct timeval start, end;
